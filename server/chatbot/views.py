@@ -4,19 +4,16 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from django.contrib.auth.models import User
-from .models import Conversation, Message, AccessRequest, Instrument, Equivalent, InstrumentFeature, Document,CustomUser
-from .serializers import CustomUserSerializer, ConversationSerializer, MessageSerializer, AccessRequestSerializer, InstrumentSerializer, EquivalentSerializer, InstrumentFeatureSerializer
+from .models import Conversation, Message, AccessRequest,CustomUser
+from .serializers import CustomUserSerializer, ConversationSerializer, MessageSerializer, AccessRequestSerializer
 from rest_framework import viewsets
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
-from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer,DocumentSerializer
+from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from .permissions import IsAdmin
 from .utils import send_password_reset_email
 from django.conf import settings
-from .extraction import extract_information
 from rest_framework.parsers import MultiPartParser, FormParser
-from .chroma_utils import add_document_to_chroma, delete_document_from_chroma
-from .utils import calculate_md5
 from .services import handle_user_question
 from django.forms.models import model_to_dict
 import uuid
@@ -46,77 +43,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
-
-class InstrumentViewSet(viewsets.ModelViewSet):
-    queryset = Instrument.objects.all()
-    serializer_class = InstrumentSerializer
-    permission_classes = [IsAuthenticated]
-
-class EquivalentViewSet(viewsets.ModelViewSet):
-    queryset = Equivalent.objects.all()
-    serializer_class = EquivalentSerializer
-    permission_classes = [IsAuthenticated]
-
-class InstrumentFeatureViewSet(viewsets.ModelViewSet):
-    queryset = InstrumentFeature.objects.all()
-    serializer_class = InstrumentFeatureSerializer
-    permission_classes = [IsAuthenticated]
-
-class DocumentUploadView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, *args, **kwargs):
-        file_serializer = DocumentSerializer(data=request.data)
-        try:
-            if file_serializer.is_valid():
-                # Vérifiez si le fichier est présent dans la requête
-                if 'file' not in request.FILES:
-                    return Response({'error': 'File not found in request.'}, status=status.HTTP_400_BAD_REQUEST)
-
-                # Calculer le hachage MD5 du fichier
-                file = request.FILES['file']
-                md5_hash = calculate_md5(file)
-
-                # Vérifier si un document avec ce hachage existe déjà
-                if Document.objects.filter(md5_hash=md5_hash).exists():
-                    return Response({'error': 'This document has already been uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
-
-                # Sauvegarder le document
-                document = file_serializer.save(md5_hash=md5_hash)
-                file_path = file_serializer.data['file']
-                print(file_path)
-                # Ajouter le document dans Chroma DB
-                schema_type = request.data.get('schema')
-                add_document_to_chroma(str(document.id), schema_type, file_path)
-
-                instrument = extract_information(file_path, request.data.get('schema'))
-                instrument_dict = model_to_dict(instrument)
-                instrument_serialized = InstrumentSerializer(instrument).data
-#                 result = 'Document uploaded successfully.'
-                return Response(instrument_serialized, status=status.HTTP_201_CREATED)
-            else:
-                return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-class DocumentListView(generics.ListAPIView):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [IsAdmin]
-
-class DocumentDeleteView(APIView):
-    permission_classes = [IsAdmin]
-
-    def delete(self, request, pk, format=None):
-        try:
-            document = Document.objects.get(pk=pk)
-            document.file.delete(save=False)  # Supprime le fichier du stockage
-            document.delete()  # Supprime l'enregistrement de la base de données
-            # Supprimer le document de Chroma DB
-            delete_document_from_chroma(str(document.id))
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Document.DoesNotExist:
-            return Response({'error': 'Document not found.'}, status=status.HTTP_404_NOT_FOUND)
         
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

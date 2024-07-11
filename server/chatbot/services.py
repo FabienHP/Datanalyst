@@ -4,11 +4,9 @@ from langchain.prompts import PromptTemplate
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
 from .models import Conversation, Message, CustomUser
-from .utils import filter_complex_metadata
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.output_parsers import StrOutputParser
 from .chroma_utils import get_chroma_db
-from .llms import get_embedding_openai, get_openai_llm
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_openai import OpenAIEmbeddings
 from langchain.agents import create_tool_calling_agent

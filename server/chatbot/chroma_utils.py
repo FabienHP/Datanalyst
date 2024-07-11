@@ -4,7 +4,6 @@ from langchain_chroma import Chroma
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
-from .utils import filter_complex_metadata
 from .llms import get_embedding_openai
 
 # Configuration du modèle de génération d'embeddings
