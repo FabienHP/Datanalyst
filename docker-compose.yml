@@ -15,7 +15,7 @@ services:
   server:
     container_name: backend_datanalyst
     build:
-      context: ./backend
+      context: ./server
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
