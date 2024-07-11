@@ -24,4 +24,7 @@ urlpatterns = [
     path('api/', include('chatbot.urls')),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path("accounts/", include("allauth.urls")),
+    path("_allauth/", include("allauth.headless.urls")),
 ]
