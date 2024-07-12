@@ -30,6 +30,8 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Optional , List
 from langchain_core.output_parsers import PydanticOutputParser
 
+global_df = None
+
 def get_mysql_data(query):
     try:
         # Créez une connexion MySQL
@@ -44,8 +46,8 @@ def get_mysql_data(query):
         if conn.is_connected():
             cursor = conn.cursor()
             cursor.execute(query)
-            result = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
-            return result
+            global_df = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
+            return global_df
         else:
             return "Erreur de connexion à la base de données MySQL."
 

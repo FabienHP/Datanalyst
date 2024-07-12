@@ -140,6 +140,7 @@ class AskQuestionView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
+
         user = request.user
         question = request.data.get('question')
         conversation_id = request.data.get('conversation_id', None)
