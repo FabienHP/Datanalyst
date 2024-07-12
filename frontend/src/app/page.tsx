@@ -1,12 +1,14 @@
 "use client";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import api from "./login/api";
+import { deleteTokens } from "./utils/tokens";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<{ sender: string; text: string; }[]>([]);
   const [input, setInput] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") as string) : null;
@@ -73,7 +75,18 @@ export default function Home() {
       <div className="flex flex-col max-w-[48rem] w-full max-h-screen">
         <div className="bg-gray-200 flex-1 overflow-y-scroll">
           <div className="px-4 py-2">
-            <div className="mb-4 text-xl">Welcome, {user.first_name} {user.last_name}!</div>
+            <div className="mb-4 text-xl flex justify-between">
+              <span>Welcome, {user.first_name} {user.last_name}!</span>
+              {/* create a logout btn */}
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full ml-2"
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  deleteTokens();
+                  router.push("/login");
+                }}
+              >Logout</button>
+            </div>
             {messages.map((message, index) => (
               <div key={index} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} mb-2`}>
                 {message.sender === "bot" && (

@@ -148,8 +148,8 @@ class Command(BaseCommand):
                 }
                 cursor.execute(
                     """
-                    INSERT INTO gifts (code, type, segment, date_to_win, image, mention, mention_2, description, subtitle, user_id, created_at, updated_at)
-                    VALUES (%(code)s, %(type)s, %(segment)s, %(date_to_win)s, %(image)s, %(mention)s, %(mention_2)s, %(description)s, %(subtitle)s, %(user_id)s, %(created_at)s, %(updated_at)s)
+                    INSERT INTO gifts (code, type, segment, date_to_win, image, mention, description, subtitle, user_id, created_at, updated_at)
+                    VALUES (%(code)s, %(type)s, %(segment)s, %(date_to_win)s, %(image)s, %(mention)s, %(description)s, %(subtitle)s, %(user_id)s, %(created_at)s, %(updated_at)s)
                     """,
                     gift_data
                 )
