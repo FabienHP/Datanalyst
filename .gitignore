@@ -1,0 +1,7 @@
+node_modules
+mysql
+.env
+
+# misc
+.DS_Store
+*.pem
